@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚌 Strada — Bus Ticket Booking API
 
 **API REST de réservation de billets d’autocar**, développée avec Node.js, Express.js et MongoDB. Strada permet de gérer les lignes, les autocars, les départs, les réservations de sièges et le contrôle sécurisé des billets à l’embarquement.
@@ -176,11 +177,74 @@ Configurer les variables nécessaires, notamment la connexion MongoDB et le secr
 ### 4. Démarrer les services
 
 Lorsque la configuration Docker Compose et MongoDB Replica Set est prête :
+=======
+
+@'
+# Strada — Bus Ticket Booking API
+
+REST API pour la réservation de billets d'autocar.
+
+## Technologies
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- Awilix (Dependency Injection)
+- JWT (Authentication)
+- Docker & Docker Compose
+- Jest & Supertest (Tests)
+
+## Architecture
+
+Le projet utilise une architecture modulaire :
+
+- `identity` : authentification et gestion des utilisateurs
+- `catalogue` : lignes, arrêts, autocars et départs
+- `reservations` : réservation et annulation des billets
+- `boarding` : contrôle des billets à l'embarquement
+- `shared` : ressources communes
+- `bootstrap` : configuration et injection des dépendances
+
+## Prérequis
+
+- Node.js
+- npm
+- Docker Desktop
+
+## Installation locale
+
+1. Cloner le dépôt :
+
+   ```bash
+   git clone https://github.com/yassminejabal/Strada-Bus-Ticket-Booking-API.git
+   cd Strada-Bus-Ticket-Booking-API
+   ```
+
+2. Installer les dépendances :
+
+   ```bash
+   npm ci
+   ```
+
+3. Créer le fichier d'environnement :
+
+   ```bash
+   Copy-Item .env.example .env
+   ```
+
+4. Configurer les variables du fichier `.env`.
+
+## Lancement avec Docker
+
+Démarrer les services :
+>>>>>>> develop
 
 ```bash
 docker compose up --build
 ```
 
+<<<<<<< HEAD
 L’application nécessite un MongoDB Replica Set pour les transactions. Vérifier que son initialisation est prévue dans la configuration Docker avant d’exécuter les opérations critiques.
 
 ### 5. Lancer l’API en développement
@@ -196,11 +260,21 @@ Les commandes exactes de démarrage dépendent de la configuration effective du 
 ## 🧪 Tests
 
 Exécuter les tests avec :
+=======
+Arrêter les services :
+
+```bash
+docker compose down
+```
+
+## Tests
+>>>>>>> develop
 
 ```bash
 npm test
 ```
 
+<<<<<<< HEAD
 Les tests prévus couvrent notamment :
 
 - Les permissions et la propriété des réservations.
@@ -269,3 +343,20 @@ Le projet couvre la gestion des départs, les réservations et le contrôle d’
 ---
 
 **Strada — Reliable reservations, secure boarding.**
+=======
+## Variables d'environnement
+
+- `PORT` : port de l'API
+- `NODE_ENV` : environnement d'exécution
+- `MONGODB_URI` : URI de connexion MongoDB
+- `JWT_SECRET` : clé secrète JWT
+- `JWT_EXPIRES_IN` : durée de validité du token
+
+## État du projet
+
+Structure initiale et configuration de l'environnement en cours de préparation.
+Les fonctionnalités métier et les tests doivent être implémentés et validés par l'équipe.
+'@ | Set-Content -Encoding utf8 README.md
+
+Get-Content README.md
+>>>>>>> develop
