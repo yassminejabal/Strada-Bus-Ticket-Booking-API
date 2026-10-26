@@ -1,0 +1,57 @@
+﻿services:
+  mongo:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval \"db.adminCommand('ping').ok\" | grep -q 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo-init:
+    image: mongo:7
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./docker/mongo-init.js:/scripts/mongo-init.js:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        mongosh --host mongo:27017 /scripts/mongo-init.js
+        for i in {1..30}; do
+          mongosh --quiet --host mongo:27017 --eval "db.hello().isWritablePrimary" | grep -q true && exit 0
+          sleep 2
+        done
+        echo "MongoDB Replica Set did not become PRIMARY"
+        exit 1
+    restart: "no"
+
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      MONGODB_URI: mongodb://mongo:27017/strada?replicaSet=rs0
+      JWT_SECRET: ${JWT_SECRET:-dev_only_change_this_secret}
+      JWT_EXPIRES_IN: 1d
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev"]
+
+volumes:
+  mongo_data:
