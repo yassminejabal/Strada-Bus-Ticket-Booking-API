@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 
-const CoachSchema = new mongoose.Schema({
+const  CoachSchema = new mongoose.Schema({
     number:{
     type:String,
     required: true,
@@ -43,5 +43,4 @@ const CoachSchema = new mongoose.Schema({
     toObject: { virtuals: true }
   }
 )
-
-module.exports = new mongoose.module('coach', CoachSchema)
+export default CoachSchema

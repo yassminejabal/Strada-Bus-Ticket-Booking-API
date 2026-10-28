@@ -1,8 +1,9 @@
 import CoatchModel from '../models/coach.model.js'
 
 
-export default class CoatchModel{
+export default class CoatchController{
     get = (req, res)=>{
+        console.log('coachController')
         return res.status(200).json({
             message: "resutn all the coachs in application"
         })

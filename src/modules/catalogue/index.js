@@ -1,6 +1,8 @@
-import coachRouters from './routes/catalogue.routes'
+import coachRouters from './routes/coach.routes.js'
 
 
+
+export {coachRouters}
 
 
 
