@@ -9,13 +9,13 @@ const injectable = {
   bookingRepository: asClass(BookingRepository).singleton(),
   reservationsService: asClass(ReservationsService).singleton(),
   reservationsController: asClass(ReservationsController).singleton(),
-  // DÉPENDANCES TEMPORAIRES 
+  // DÉPENDANCES TEMPORAIRES
   catalogueApi: asValue({
     getDepartureForBooking: async () => ({
-      status: 'OPEN',
-      departureAt: new Date(Date.now() + 10000000), 
+      status: "OPEN",
+      departureAt: new Date(Date.now() + 10000000),
       seatPlan: [1, 2, 3, 4],
-      fareCents: 5000
+      fareCents: 5000,
     }),
   }),
   // Fausse horloge

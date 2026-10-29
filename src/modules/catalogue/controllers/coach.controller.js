@@ -1,10 +1,15 @@
-import CoatchModel from '../models/coach.model.js'
 
 
 export default class CoatchController{
-    get = (req, res)=>{
+    
+    constructor({CoachService}){
+        this.CoachService = CoachService
+    }
+    get = async(req, res)=>{
+        const coaches = await this.CoachService.getCoach()
         return res.status(200).json({
-            message: "resutn all the coachs in application"
+            message: "resutn all the coachs in application",
+            coaches: coaches
         })
     }
 
