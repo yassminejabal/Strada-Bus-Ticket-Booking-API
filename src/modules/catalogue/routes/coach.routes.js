@@ -10,7 +10,6 @@ class coachRouters{
 
 
     initRouters () {
-        console.log("2. initializeRoutes called");
         this.route.get('/', this.coachController.get)
         this.route.get('/:id', this.coachController.getOne)
     }

@@ -42,5 +42,8 @@ const  CoachSchema = new mongoose.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
   }
-)
-export default CoachSchema
+) 
+
+const CoachModel = mongoose.model('CoachModel', CoachSchema);
+
+export default CoachModel
