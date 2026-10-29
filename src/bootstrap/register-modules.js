@@ -4,6 +4,11 @@ import CoachController from '../modules/catalogue/controllers/coach.controller.j
 import coachService from '../modules/catalogue/services/coach.service.js'
 import coachRepository from '../modules/catalogue/repositories/coach.reqository.js'
 import CoachModel from '../modules/catalogue/models/coach.model.js'
+import AuthController from '../modules/identity/controllers/auth.controller.js'
+import AuthService from '../modules/identity/services/auth.service.js'
+import userRepository from '../modules/identity/repositories/user.repository.js'
+import UserModel from '../modules/identity/models/user.model.js'
+
 
 // ADD TO THIS OBJECT CLASS THAT U WANT TO BE INJECTABLE
 const  injectable = {
@@ -12,6 +17,10 @@ const  injectable = {
     CoachRepository: asClass(coachRepository),
     CoachModel: asValue(CoachModel),
 
+    AuthController: asClass(AuthController),
+    AuthService: asClass(AuthService),
+    userRepository: asClass(userRepository),
+    UserModel: asValue(UserModel),
 }
 
 export default injectable

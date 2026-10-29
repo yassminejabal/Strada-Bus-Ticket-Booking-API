@@ -1,6 +1,6 @@
 
 @'
-# Strada — Bus Ticket Booking API
+   # Strada — Bus Ticket Booking API
 
 REST API pour la réservation de billets d'autocar.
 
@@ -90,3 +90,13 @@ Les fonctionnalités métier et les tests doivent être implémentés et validé
 '@ | Set-Content -Encoding utf8 README.md
 
 Get-Content README.md
+
+
+
+### 🔑 Test Credentials (Seeder Data)
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@strada.com` | `Password123` |
+| **Passenger** | `yassmine@strada.com` | `Password123` |
+| **Agent** | `agent@strada.com` | `Password123` |

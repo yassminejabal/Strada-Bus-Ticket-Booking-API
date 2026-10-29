@@ -9,4 +9,3 @@ export function setup(){
     container.register(injectable)
     console.log("files has been injected...")
 }
-
