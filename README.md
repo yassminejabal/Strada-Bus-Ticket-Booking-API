@@ -1,5 +1,4 @@
 
-@'
 # Strada — Bus Ticket Booking API
 
 REST API pour la réservation de billets d'autocar.
