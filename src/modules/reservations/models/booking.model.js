@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -31,7 +31,7 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// 🔒 INVARIANT 1 : Empêcher 2 réservations actives sur le même siège
+// Empêcher 2 réservations actives sur le même siège
 bookingSchema.index(
   { departureId: 1, seatNumber: 1 },
   {
@@ -40,7 +40,7 @@ bookingSchema.index(
   },
 );
 
-// 🔒 Empêcher 1 passager de réserver 2 fois le même départ
+// Empêcher 1 passager de réserver 2 fois le même départ
 bookingSchema.index(
   { departureId: 1, passengerId: 1 },
   {

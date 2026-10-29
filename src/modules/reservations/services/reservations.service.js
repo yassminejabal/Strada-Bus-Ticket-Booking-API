@@ -1,0 +1,94 @@
+class ReservationsService {
+  constructor({
+    bookingRepository,
+    catalogueApi,
+    clock,
+    transactionRunner,
+    ticketCodeGenerator,
+    identityApi,
+  }) {
+    this.bookingRepository = bookingRepository;
+    this.catalogueApi = catalogueApi;
+    this.clock = clock;
+    this.transactionRunner = transactionRunner;
+    this.ticketCodeGenerator = ticketCodeGenerator;
+    this.identityApi = identityApi;
+  }
+
+  async bookSeat(departureId, seatNumber, userContext) {
+    return await this.transactionRunner.run(async (session) => {
+      // Récupérer le départ via le contrat public de Catalogue (avec la session)
+      const departure = await this.catalogueApi.getDepartureForBooking(
+        departureId,
+        session,
+      );
+
+      // Vérifier que le départ est OPEN et futur
+      if (
+        departure.status !== "OPEN" ||
+        new Date(departure.departureAt) <= this.clock.now()
+      ) {
+        const error = new Error("Départ non réservable");
+        error.code = "DEPARTURE_NOT_BOOKABLE";
+        error.status = 409;
+        throw error;
+      }
+
+      // Vérifier que le siège existe dans le plan figé du départ
+      if (!departure.seatPlan.includes(seatNumber)) {
+        const error = new Error("Siège inexistant");
+        error.code = "SEAT_NOT_IN_PLAN";
+        error.status = 400;
+        throw error;
+      }
+
+      // Vérifier si le passager a déjà réservé (sécurité avant l'index unique)
+      const existingPassengerBooking =
+        await this.bookingRepository.findByPassenger(
+          departureId,
+          userContext.userId,
+          session,
+        );
+      if (existingPassengerBooking) {
+        const error = new Error("Déjà réservé");
+        error.code = "ALREADY_BOOKED";
+        error.status = 409;
+        throw error;
+      }
+
+      // Générer le code du billet
+      const ticketCode = this.ticketCodeGenerator();
+
+      // Créer la réservation
+      const bookingData = {
+        passengerId: userContext.userId,
+        departureId: departureId,
+        seatNumber: seatNumber,
+        passengerName: userContext.fullName,
+        priceCents: departure.fareCents, 
+        ticketCode: ticketCode,
+        status: "CONFIRMED",
+      };
+
+      try {
+        const booking = await this.bookingRepository.create(
+          bookingData,
+          session,
+        );
+        return booking;
+      } catch (error) {
+        if (error.code === 11000) {
+          const conflictError = new Error("Ce siege est deja reserve.");
+          conflictError.code = error.keyPattern.seatNumber
+            ? "SEAT_UNAVAILABLE"
+            : "ALREADY_BOOKED";
+          conflictError.status = 409;
+          throw conflictError;
+        }
+        throw error;
+      }
+    });
+  }
+}
+
+export default ReservationsService;
