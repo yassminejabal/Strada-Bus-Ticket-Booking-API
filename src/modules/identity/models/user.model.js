@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true, trim: true },
@@ -13,14 +13,16 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function () {
+  const user = this;
+  
+  if (!user.isModified('password')) return;
+  
   try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    user.password = hashedPassword;
   } catch (error) {
-    next(error);
+    throw error;
   }
 });
 

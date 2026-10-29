@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 export default class AuthService {
@@ -7,10 +7,8 @@ export default class AuthService {
   }
 
   async login({ email, password }) {
-    // 1. التحقق من وجود المستخدم عبر الإيميل
     const user = await this.userRepository.findByEmail(email);
     
-    // Critère: Si les identifiants sont incorrects, une erreur adaptée est retournée (401)
     const genericError = new Error('Identifiants incorrects');
     genericError.statusCode = 401;
     genericError.code = 'INVALID_CREDENTIALS';

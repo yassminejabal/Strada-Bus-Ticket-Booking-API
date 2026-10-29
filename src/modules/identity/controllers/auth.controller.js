@@ -1,13 +1,13 @@
 export default class AuthController {
-  constructor({ authService }) {
-    this.authService = authService;
+  constructor({ AuthService }) {
+    this.AuthService = AuthService;
     this.login = this.login.bind(this);
   }
 
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
-      const result = await this.authService.login({ email, password });
+      const result = await this.AuthService.login({ email, password });
 
       return res.status(200).json({
         data: {
