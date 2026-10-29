@@ -8,7 +8,11 @@ export default class AuthRoutes {
   }
 
   initRoutes() {
-this.router.post('/login', (req, res, next) => this.authController.login(req, res, next));  }
+this.router.post('/login', (req, res, next) => this.authController.login(req, res, next));
+this.router.post('/register', (req, res, next) => this.authController.register(req, res, next));
+
+
+  }
   getRouter() {
     return this.router;
   }

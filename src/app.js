@@ -4,6 +4,7 @@ const app = express();
 import errorHandler from "./shared/error-handler.js";
 import reservationsModule from "./modules/reservations/index.js";
 import { AuthRoutes } from "./modules/identity/index.js";
+import errorHandler from './middlewares/error.middleware.js';
 setup();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

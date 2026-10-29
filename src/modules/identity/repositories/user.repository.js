@@ -11,4 +11,4 @@ export default class UserRepository {
     const user = new this.UserModel(userData);
     return await user.save();
   }
-}
+}       
