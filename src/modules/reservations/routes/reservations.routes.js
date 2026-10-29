@@ -6,7 +6,7 @@ const router = express.Router();
 //  MIDDLEWARE TEMPORAIRE 
 const fakeAuthPassenger = (req, res, next) => {
   req.user = {
-    userId: new mongoose.Types.ObjectId().toString(),
+    userId: req.headers['x-test-passenger-id'] || new mongoose.Types.ObjectId().toString(),
     role: 'passenger',
     fullName: 'Achraf Test Passenger'
   };
