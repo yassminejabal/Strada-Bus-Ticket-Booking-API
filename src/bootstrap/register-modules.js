@@ -4,8 +4,16 @@ import BookingModel from "../modules/reservations/models/booking.model.js";
 import BookingRepository from "../modules/reservations/repositories/booking.repository.js";
 import ReservationsService from "../modules/reservations/services/reservations.service.js";
 import ReservationsController from "../modules/reservations/controllers/reservations.controller.js";
+import AuthController from '../modules/identity/controllers/auth.controller.js';
+import AuthService from '../modules/identity/services/auth.service.js';
+import UserRepository from '../modules/identity/repositories/user.repository.js';
+import UserModel from '../modules/identity/models/user.model.js'; 
 const injectable = {
+  authController: asClass(AuthController).singleton(), 
+  authService: asClass(AuthService).singleton(),
+  userRepository: asClass(UserRepository).singleton(),
   BookingModel: asValue(BookingModel),
+  UserModel: asValue(UserModel), 
   bookingRepository: asClass(BookingRepository).singleton(),
   reservationsService: asClass(ReservationsService).singleton(),
   reservationsController: asClass(ReservationsController).singleton(),

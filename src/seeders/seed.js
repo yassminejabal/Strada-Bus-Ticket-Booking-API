@@ -115,8 +115,8 @@ const seedDirectly = async () => {
       {
         lineId: insertedLines[0]._id,
         coachId: coachDoc._id,
-        departureAt: new Date(),
-        arrivalAt: new Date(Date.now() + 4 * 3600 * 1000),
+        departureAt: new Date('2027-03-15T09:00:00Z'),
+        arrivalAt: new Date('2027-03-15T13:00:00Z'),
         fareCents: 15000,
         status: "OPEN",
         snapshot: {},

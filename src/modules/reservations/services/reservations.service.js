@@ -65,7 +65,7 @@ class ReservationsService {
         departureId: departureId,
         seatNumber: seatNumber,
         passengerName: userContext.fullName,
-        priceCents: departure.fareCents, 
+        priceCents: departure.fareCents,
         ticketCode: ticketCode,
         status: "CONFIRMED",
       };
@@ -88,6 +88,54 @@ class ReservationsService {
         throw error;
       }
     });
+  }
+  // Lister les réservations (Pagination)
+  async getMyBookings(userContext, page = 1, limit = 20) {
+    const queryFilter =
+      userContext.role === "admin" ? {} : { passengerId: userContext.userId };
+
+    // On récupère les données 
+    const bookings = await this.bookingRepository.findByPassengerId(
+      userContext.userId,
+      page,
+      limit,
+    );
+    const total = await this.bookingRepository.countByPassengerId(
+      userContext.userId,
+    );
+
+    return {
+      data: bookings,
+      pagination: {
+        page,
+        limit,
+        total,
+      },
+    };
+  }
+
+  // Voir le détail 
+  async getBookingDetails(bookingId, userContext) {
+    const booking = await this.bookingRepository.findById(bookingId);
+
+    if (!booking) {
+      const error = new Error("Réservation introuvable");
+      error.code = "RESOURCE_NOT_FOUND";
+      error.status = 404;
+      throw error;
+    }
+
+    if (
+      booking.passengerId.toString() !== userContext.userId &&
+      userContext.role !== "admin"
+    ) {
+      const error = new Error("Réservation introuvable");
+      error.code = "RESOURCE_NOT_FOUND";
+      error.status = 404;
+      throw error;
+    }
+
+    return booking;
   }
 }
 

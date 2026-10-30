@@ -1,26 +1,30 @@
-import express from 'express';
-import mongoose from 'mongoose';
-
+import express from "express";
+import { authenticate } from "../../../middlewares/authenticate.js";
+import { authorize } from "../../../middlewares/authorize.js";
 const router = express.Router();
 
-//  MIDDLEWARE TEMPORAIRE 
-const fakeAuthPassenger = (req, res, next) => {
-  req.user = {
-    userId: req.headers['x-test-passenger-id'] || new mongoose.Types.ObjectId().toString(),
-    role: 'passenger',
-    fullName: 'Achraf Test Passenger'
-  };
-  next();
-};
-
 export default (container) => {
+  const controller = container.resolve("reservationsController");
   router.post(
-    '/departures/:id/bookings',
-    fakeAuthPassenger,
+    "/departures/:id/bookings",
+    authenticate,
+    authorize("passenger"),
     (req, res, next) => {
-      const controller = container.resolve('reservationsController');
+      const controller = container.resolve("reservationsController");
       return controller.bookSeat(req, res, next);
-    }
+    },
+  );
+  router.get(
+    "/bookings",
+    authenticate,
+    authorize("passenger", "admin"),
+    (req, res, next) => controller.getMyBookings(req, res, next),
+  );
+  router.get(
+    "/bookings/:id",
+    authenticate,
+    authorize("passenger", "admin"),
+    (req, res, next) => controller.getBookingById(req, res, next),
   );
 
   return router;

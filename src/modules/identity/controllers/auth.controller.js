@@ -1,6 +1,6 @@
 export default class AuthController {
-  constructor({ AuthService }) {
-    this.AuthService = AuthService;
+  constructor({ authService }) {
+    this.authService = authService;
     this.login = this.login.bind(this);
     this.register = this.register.bind(this);
   }
@@ -8,14 +8,14 @@ export default class AuthController {
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
-      const result = await this.AuthService.login({ email, password });
+      const result = await this.authService.login({ email, password });
 
       return res.status(200).json({
         success: true,
         data: {
           accessToken: result.accessToken,
-          user: result.user
-        }
+          user: result.user,
+        },
       });
     } catch (error) {
       next(error);
@@ -24,17 +24,17 @@ export default class AuthController {
 
   async register(req, res, next) {
     try {
-        console.log("👉 Register hit with body:", req.body); // زيدي هاد السطر هنا
+      console.log("👉 Register hit with body:", req.body); // زيدي هاد السطر هنا
       const userData = req.body;
-      
+
       const newUser = await this.AuthService.register(userData);
 
       return res.status(201).json({
         success: true,
         message: "Compte créé avec succès",
         data: {
-          user: newUser
-        }
+          user: newUser,
+        },
       });
     } catch (error) {
       next(error);
