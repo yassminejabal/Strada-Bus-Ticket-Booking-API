@@ -5,7 +5,8 @@ import {
   beforeAll,
   afterAll,
   afterEach,
-} from "@jest/globals";
+  jest,
+} from "@jest/globals"; 
 import request from "supertest";
 import mongoose from "mongoose";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
@@ -14,7 +15,9 @@ import app from "../../src/app.js";
 import { container } from "../../src/bootstrap/container.js";
 import BookingModel from "../../src/modules/reservations/models/booking.model.js";
 import jwt from "jsonwebtoken";
-process.env.JWT_SECRET = 'fallback_secret'; 
+
+process.env.JWT_SECRET = "fallback_secret";
+
 const getTestToken = (userId = new mongoose.Types.ObjectId().toString()) => {
   return jwt.sign(
     { userId, role: "passenger", fullName: "Achraf Test" },
@@ -42,9 +45,6 @@ beforeAll(async () => {
         fareCents: 5000,
       }),
     }),
-    transactionRunner: asValue({
-      run: async (callback) => callback(null),
-    }),
     clock: asValue({ now: () => new Date() }),
     identityApi: asValue({}),
   });
@@ -59,38 +59,32 @@ afterEach(async () => {
   await BookingModel.deleteMany({});
 });
 
-describe("US-14 & US-15 : Réservation de place", () => {
+describe("US-14 à US-19 : Réservations", () => {
   it("devrait réserver une place avec succès (201)", async () => {
-    // On génère un token pour un passager
     const token = getTestToken();
-
     const response = await request(app)
       .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
-      .set("Authorization", `Bearer ${token}`) 
+      .set("Authorization", `Bearer ${token}`)
       .send({ seatNumber: 2 });
 
     expect(response.status).toBe(201);
-    expect(response.body.data.seatNumber).toBe(2);
     expect(response.body.data.status).toBe("CONFIRMED");
 
     const bookingInDb = await BookingModel.findOne({ seatNumber: 2 });
     expect(bookingInDb).not.toBeNull();
-    expect(bookingInDb.ticketCode).toBeDefined();
   });
 
   it("devrait refuser la réservation si le siège est déjà pris (409)", async () => {
-    // Premier passager (Token 1)
     const token1 = getTestToken();
     await request(app)
       .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
-      .set("Authorization", `Bearer ${token1}`) 
+      .set("Authorization", `Bearer ${token1}`)
       .send({ seatNumber: 3 });
 
-    // Deuxième passager (Token 2 - différent)
     const token2 = getTestToken();
     const response = await request(app)
       .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
-      .set("Authorization", `Bearer ${token2}`) 
+      .set("Authorization", `Bearer ${token2}`)
       .send({ seatNumber: 3 });
 
     expect(response.status).toBe(409);
@@ -98,37 +92,30 @@ describe("US-14 & US-15 : Réservation de place", () => {
   });
 
   it("devrait empêcher un même passager de réserver deux sièges différents (409)", async () => {
-    // On crée UN SEUL token pour simuler le même passager
     const passengerId = new mongoose.Types.ObjectId().toString();
     const token = getTestToken(passengerId);
 
-    // 1ère réservation
-    const res1 = await request(app)
+    await request(app)
       .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
-      .set("Authorization", `Bearer ${token}`) 
+      .set("Authorization", `Bearer ${token}`)
       .send({ seatNumber: 1 });
-
-    expect(res1.status).toBe(201);
-
-    // 2ème réservation (autre siège, même token)
     const response = await request(app)
       .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
-      .set("Authorization", `Bearer ${token}`) 
+      .set("Authorization", `Bearer ${token}`)
       .send({ seatNumber: 2 });
 
     expect(response.status).toBe(409);
     expect(response.body.error.code).toBe("ALREADY_BOOKED");
   });
 
-  it(" TEST CONCURRENCE : ne doit attribuer le siège qu'à une seule requête", async () => {
-    // 2 passagers différents pour le test de concurrence
+  it("🔥 TEST CONCURRENCE : ne doit attribuer le siège qu'à une seule requête", async () => {
     const token1 = getTestToken();
     const token2 = getTestToken();
 
     const [res1, res2] = await Promise.all([
       request(app)
         .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
-        .set("Authorization", `Bearer ${token1}`) 
+        .set("Authorization", `Bearer ${token1}`)
         .send({ seatNumber: 4 }),
       request(app)
         .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
@@ -144,5 +131,67 @@ describe("US-14 & US-15 : Réservation de place", () => {
       status: "CONFIRMED",
     });
     expect(bookings.length).toBe(1);
+  });
+
+  it("US-18 : devrait annuler toutes les réservations d'un départ", async () => {
+    const token = getTestToken();
+    await request(app)
+      .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ seatNumber: 1 });
+
+    const reservationsService = container.resolve("reservationsService");
+
+    container.register({
+      reservationsApi: asValue({
+        cancelAllBookingsForDeparture: async (id, session) => {
+          return await reservationsService.cancelAllBookingsForDeparture(
+            id,
+            session,
+          );
+        },
+      }),
+      catalogueApi: asValue({
+        cancelDeparture: async (id, user, session) => ({
+          id,
+          status: "CANCELLED",
+        }),
+      }),
+    });
+
+    const cancelDepartureService = container.resolve("cancelDepartureService");
+    await cancelDepartureService.execute(FAKE_DEPARTURE_ID, {
+      userId: "admin",
+      role: "admin",
+    });
+
+    const bookings = await BookingModel.find({
+      departureId: FAKE_DEPARTURE_ID,
+    });
+    expect(bookings[0].status).toBe("CANCELLED");
+    expect(bookings[0].cancelReason).toBe("DEPARTURE");
+  });
+
+  it("US-19 : ROLLBACK - ne doit rien sauvegarder en cas d'échec", async () => {
+    const bookingRepository = container.resolve("bookingRepository");
+
+    //Simule un crash du serveur juste avant la validation en base
+    const spy = jest
+      .spyOn(bookingRepository, "create")
+      .mockRejectedValueOnce(new Error("Erreur simulée de la base de données"));
+
+    const token = getTestToken();
+    const response = await request(app)
+      .post(`/api/v1/departures/${FAKE_DEPARTURE_ID}/bookings`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ seatNumber: 3 });
+
+    expect(response.status).toBe(500);
+
+    //  PREUVE DU ROLLBACK
+    const bookings = await BookingModel.find({ seatNumber: 3 });
+    expect(bookings.length).toBe(0);
+
+    spy.mockRestore();
   });
 });

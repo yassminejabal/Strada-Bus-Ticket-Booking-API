@@ -16,7 +16,6 @@ class BookingRepository {
     }).session(session);
   }
 
-  // Récupérer les réservations d'un passager avec pagination
   async findByPassengerId(passengerId, page = 1, limit = 20, session = null) {
     const skip = (page - 1) * limit;
     const query = this.BookingModel.find({ passengerId })
@@ -28,12 +27,10 @@ class BookingRepository {
     return await query.exec();
   }
 
-  // Compter le nombre total pour la pagination
   async countByPassengerId(passengerId) {
     return await this.BookingModel.countDocuments({ passengerId });
   }
 
-  // Récupérer une réservation par son ID
   async findById(bookingId, session = null) {
     const query = this.BookingModel.findById(bookingId);
     if (session) query.session(session);
@@ -43,8 +40,17 @@ class BookingRepository {
     const query = this.BookingModel.findByIdAndUpdate(
       bookingId,
       { status, cancelReason },
-      { new: true }, 
+      { new: true },
     );
+    if (session) query.session(session);
+    return await query.exec();
+  }
+  async cancelDepartureBookings(departureId, session = null) {
+    const query = this.BookingModel.updateMany(
+      { departureId, status: "CONFIRMED" },
+      { status: "CANCELLED", cancelReason: "DEPARTURE" },
+    );
+
     if (session) query.session(session);
     return await query.exec();
   }

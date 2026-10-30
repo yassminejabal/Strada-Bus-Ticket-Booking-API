@@ -8,6 +8,7 @@ import AuthController from '../modules/identity/controllers/auth.controller.js';
 import AuthService from '../modules/identity/services/auth.service.js';
 import UserRepository from '../modules/identity/repositories/user.repository.js';
 import UserModel from '../modules/identity/models/user.model.js'; 
+import CancelDepartureService from "../application/cancel-departure.js";
 const injectable = {
   authController: asClass(AuthController).singleton(), 
   authService: asClass(AuthService).singleton(),
@@ -17,7 +18,7 @@ const injectable = {
   bookingRepository: asClass(BookingRepository).singleton(),
   reservationsService: asClass(ReservationsService).singleton(),
   reservationsController: asClass(ReservationsController).singleton(),
-  // DÉPENDANCES TEMPORAIRES
+  cancelDepartureService: asClass(CancelDepartureService).singleton(),
   catalogueApi: asValue({
     getDepartureForBooking: async () => ({
       status: "OPEN",

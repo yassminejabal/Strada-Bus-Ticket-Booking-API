@@ -17,13 +17,11 @@ class ReservationsService {
 
   async bookSeat(departureId, seatNumber, userContext) {
     return await this.transactionRunner.run(async (session) => {
-      // Récupérer le départ via le contrat public de Catalogue (avec la session)
       const departure = await this.catalogueApi.getDepartureForBooking(
         departureId,
         session,
       );
 
-      // Vérifier que le départ est OPEN et futur
       if (
         departure.status !== "OPEN" ||
         new Date(departure.departureAt) <= this.clock.now()
@@ -34,7 +32,6 @@ class ReservationsService {
         throw error;
       }
 
-      // Vérifier que le siège existe dans le plan figé du départ
       if (!departure.seatPlan.includes(seatNumber)) {
         const error = new Error("Siège inexistant");
         error.code = "SEAT_NOT_IN_PLAN";
@@ -42,7 +39,6 @@ class ReservationsService {
         throw error;
       }
 
-      // Vérifier si le passager a déjà réservé (sécurité avant l'index unique)
       const existingPassengerBooking =
         await this.bookingRepository.findByPassenger(
           departureId,
@@ -56,10 +52,8 @@ class ReservationsService {
         throw error;
       }
 
-      // Générer le code du billet
       const ticketCode = this.ticketCodeGenerator();
 
-      // Créer la réservation
       const bookingData = {
         passengerId: userContext.userId,
         departureId: departureId,
@@ -89,12 +83,10 @@ class ReservationsService {
       }
     });
   }
-  // Lister les réservations (Pagination)
   async getMyBookings(userContext, page = 1, limit = 20) {
-    const queryFilter =
-      userContext.role === "admin" ? {} : { passengerId: userContext.userId };
+    // const queryFilter =
+    //   userContext.role === "admin" ? {} : { passengerId: userContext.userId };
 
-    // On récupère les données
     const bookings = await this.bookingRepository.findByPassengerId(
       userContext.userId,
       page,
@@ -114,7 +106,6 @@ class ReservationsService {
     };
   }
 
-  // Voir le détail
   async getBookingDetails(bookingId, userContext) {
     const booking = await this.bookingRepository.findById(bookingId);
 
@@ -175,6 +166,12 @@ class ReservationsService {
         session,
       );
     });
+  }
+  async cancelAllBookingsForDeparture(departureId, session) {
+    return await this.bookingRepository.cancelDepartureBookings(
+      departureId,
+      session,
+    );
   }
 }
 
