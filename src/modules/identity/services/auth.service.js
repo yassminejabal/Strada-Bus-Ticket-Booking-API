@@ -39,4 +39,22 @@ export default class AuthService {
       user
     };
   }
+
+  async register(userData) {
+    const existingUser = await this.userRepository.findByEmail(userData.email);
+    if (existingUser) {
+      const error = new Error('Cet email est déjà utilisé.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (userData.password) {
+      const salt = await bcrypt.genSalt(10);
+      userData.password = await bcrypt.hash(userData.password, salt);
+    }
+
+    const newUser = await this.userRepository.create(userData);
+
+    return newUser;
+  }
 }
