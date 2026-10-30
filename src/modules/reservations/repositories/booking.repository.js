@@ -39,6 +39,15 @@ class BookingRepository {
     if (session) query.session(session);
     return await query.exec();
   }
+  async updateStatus(bookingId, status, cancelReason = null, session = null) {
+    const query = this.BookingModel.findByIdAndUpdate(
+      bookingId,
+      { status, cancelReason },
+      { new: true }, 
+    );
+    if (session) query.session(session);
+    return await query.exec();
+  }
 }
 
 export default BookingRepository;

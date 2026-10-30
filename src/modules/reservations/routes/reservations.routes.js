@@ -26,6 +26,12 @@ export default (container) => {
     authorize("passenger", "admin"),
     (req, res, next) => controller.getBookingById(req, res, next),
   );
+  router.post(
+    "/bookings/:id/cancel",
+    authenticate,
+    authorize("passenger"),
+    (req, res, next) => controller.cancelBooking(req, res, next),
+  );
 
   return router;
 };

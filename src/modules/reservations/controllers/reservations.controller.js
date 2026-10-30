@@ -49,6 +49,19 @@ class ReservationsController {
       next(error);
     }
   }
+
+  async cancelBooking(req, res, next) {
+    try {
+      const { id } = req.params;
+      const booking = await this.reservationsService.cancelBooking(
+        id,
+        req.user,
+      );
+      res.status(200).json({ data: booking });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default ReservationsController;

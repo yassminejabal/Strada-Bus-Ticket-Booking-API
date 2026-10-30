@@ -94,7 +94,7 @@ class ReservationsService {
     const queryFilter =
       userContext.role === "admin" ? {} : { passengerId: userContext.userId };
 
-    // On récupère les données 
+    // On récupère les données
     const bookings = await this.bookingRepository.findByPassengerId(
       userContext.userId,
       page,
@@ -114,7 +114,7 @@ class ReservationsService {
     };
   }
 
-  // Voir le détail 
+  // Voir le détail
   async getBookingDetails(bookingId, userContext) {
     const booking = await this.bookingRepository.findById(bookingId);
 
@@ -136,6 +136,45 @@ class ReservationsService {
     }
 
     return booking;
+  }
+
+  async cancelBooking(bookingId, userContext) {
+    return await this.transactionRunner.run(async (session) => {
+      const booking = await this.bookingRepository.findById(bookingId, session);
+
+      if (!booking || booking.passengerId.toString() !== userContext.userId) {
+        const error = new Error("Réservation introuvable");
+        error.code = "RESOURCE_NOT_FOUND";
+        error.status = 404;
+        throw error;
+      }
+
+      if (booking.status !== "CONFIRMED") {
+        const error = new Error("Cette réservation ne peut plus être annulée.");
+        error.code = "BOOKING_NOT_CANCELLABLE";
+        error.status = 409;
+        throw error;
+      }
+
+      const departure = await this.catalogueApi.getDepartureForBooking(
+        booking.departureId,
+        session,
+      );
+
+      if (!departure || departure.status !== "OPEN") {
+        const error = new Error("Le départ n'est plus ouvert à l'annulation.");
+        error.code = "BOOKING_NOT_CANCELLABLE";
+        error.status = 409;
+        throw error;
+      }
+
+      return await this.bookingRepository.updateStatus(
+        bookingId,
+        "CANCELLED",
+        "CUSTOMER",
+        session,
+      );
+    });
   }
 }
 
