@@ -10,7 +10,7 @@ const MONGO_URI = process.env.MONGODB_URI;
 async function startServer() {
     try {
         console.log('Attempting to connect to MongoDB...');
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect('mongodb://127.0.0.1:27017/strada?directConnection=true');
         
         console.log('Connected to MongoDB successfully! ');
 
