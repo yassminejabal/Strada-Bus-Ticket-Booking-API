@@ -10,7 +10,6 @@ const seedDirectly = async () => {
     await mongoose.connect(uri);
     console.log("🟢 Connected to MongoDB for Direct Seeding...");
 
-    // 1. Users Collection
     const usersCollection = mongoose.connection.collection('users');
     const hashedPassword = await bcrypt.hash("Password123", 10);
     
@@ -29,7 +28,6 @@ const seedDirectly = async () => {
     }
     console.log("✅ Users seeded successfully.");
 
-    // 2. Coach Collection (Attributs: registration, seatNumbers, isArchived)
     const coachCollection = mongoose.connection.collection('coaches');
     const coachesData = [
       { registration: "12345-A-6", seatNumbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], isArchived: false, createdAt: new Date(), updatedAt: new Date() },
@@ -45,7 +43,6 @@ const seedDirectly = async () => {
     }
     console.log("✅ Coaches seeded successfully.");
 
-    // 3. City Collection (Attributs: name)
     const cityCollection = mongoose.connection.collection('cities');
     const citiesData = [
       { name: "Casablanca" },
@@ -65,7 +62,6 @@ const seedDirectly = async () => {
     }
     console.log("✅ Cities seeded successfully.");
 
-    // 4. Stop Collection (Attributs: name, cityId)
     const stopCollection = mongoose.connection.collection('stops');
     const stopsData = [
       { name: "Gare CTM Casa", cityId: insertedCities[0]._id },
@@ -84,7 +80,6 @@ const seedDirectly = async () => {
     }
     console.log("✅ Stops seeded successfully.");
 
-    // 5. Line Collection (Attributs: code, label, stopIds, isArchived)
     const lineCollection = mongoose.connection.collection('lines');
     const linesData = [
       {
